@@ -1,0 +1,17 @@
+defaultNamespace: longhorn-system
+
+helm:
+  repo: https://charts.longhorn.io
+  chart: longhorn
+  version: 1.13.0
+  values:
+    defaultSettings:
+      defaultReplicaCount: 1
+      defaultDataLocality: strict-local
+      defaultDataPath: /var/lib/longhorn
+      backupTarget: ""
+    persistence:
+      defaultClass: true
+      defaultClassReplicaCount: 1
+      defaultDataLocality: strict-local
+      reclaimPolicy: Retain
