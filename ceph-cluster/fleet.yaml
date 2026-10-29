@@ -40,7 +40,11 @@ helm:
             resources:
               requests:
                 storage: 10Gi
+      dashboard:
+        ssl: false
       storage:
+        useAllNodes: false
+        useAllDevices: false
         storageClassDeviceSets:
           - name: osd
             count: 4

@@ -1,0 +1,9 @@
+defaultNamespace: rook-ceph
+
+labels:
+  koldun.io/component: ceph-s3
+
+dependsOn:
+  - selector:
+      matchLabels:
+        koldun.io/component: ceph-cluster
