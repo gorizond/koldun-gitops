@@ -1,5 +1,8 @@
 defaultNamespace: longhorn-system
 
+labels:
+  koldun.io/component: longhorn
+
 helm:
   repo: https://charts.longhorn.io
   chart: longhorn

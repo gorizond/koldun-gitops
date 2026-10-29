@@ -1,8 +1,15 @@
 defaultNamespace: rook-ceph
 
+labels:
+  koldun.io/component: ceph-cluster
+
 dependsOn:
-  - name: koldun-gitops-rook-ceph
-  - name: koldun-gitops-longhorn
+  - selector:
+      matchLabels:
+        koldun.io/component: longhorn
+  - selector:
+      matchLabels:
+        koldun.io/component: rook-ceph
 
 helm:
   repo: https://charts.rook.io/release

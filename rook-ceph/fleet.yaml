@@ -1,5 +1,8 @@
 defaultNamespace: rook-ceph
 
+labels:
+  koldun.io/component: rook-ceph
+
 helm:
   repo: https://charts.rook.io/release
   chart: rook-ceph
