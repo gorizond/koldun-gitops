@@ -1,0 +1,59 @@
+---
+name: lint
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: yamllint
+        run: |
+          python3 -m pip install --quiet yamllint
+          yamllint -c .yamllint.yaml .
+
+      - name: helm lint
+        if: ${{ hashFiles('**/Chart.yaml') != '' }}
+        run: |
+          chart_dir="$(dirname "$(find . -name Chart.yaml -not -path './.git/*' | head -n1)")"
+          helm lint "$chart_dir"
+
+      - name: english only
+        run: |
+          if grep -rInP '[\x{0400}-\x{04FF}]' \
+            --include='*.md' --include='*.yaml' --include='*.yml' \
+            --include='*.sh' --include='*.json' \
+            --exclude-dir=.git . ; then
+            echo "Non-English (Cyrillic) text found in repository files." >&2
+            exit 1
+          fi
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks
+        run: |
+          curl -sSfL \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz \
+            | tar -xz gitleaks
+          ./gitleaks detect --source . --redact --verbose
+
+      - name: default passwords
+        run: |
+          if grep -rInE '(passw0rd|changeme)' \
+            --include='*.yaml' --include='*.yml' --exclude-dir=.git . ; then
+            echo "Default password pattern found." >&2
+            exit 1
+          fi
