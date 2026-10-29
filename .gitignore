@@ -1,0 +1,18 @@
+# Credentials and local access files
+*kubeconfig*
+kubeconfig*
+*.pem
+*.key
+*.crt
+.env
+.env.*
+.venv/
+
+# Local scratch
+tmp/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Sealed secrets are the only allowed secret form and must stay trackable.
+!secrets/*.sealed.yaml
