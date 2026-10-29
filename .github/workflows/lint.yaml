@@ -53,7 +53,8 @@ jobs:
       - name: default passwords
         run: |
           if grep -rInE '(passw0rd|changeme)' \
-            --include='*.yaml' --include='*.yml' --exclude-dir=.git . ; then
+            --include='*.yaml' --include='*.yml' \
+            --exclude-dir=.git --exclude-dir=.github . ; then
             echo "Default password pattern found." >&2
             exit 1
           fi
