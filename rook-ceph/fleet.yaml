@@ -1,0 +1,6 @@
+defaultNamespace: rook-ceph
+
+helm:
+  repo: https://charts.rook.io/release
+  chart: rook-ceph
+  version: 1.21.1
