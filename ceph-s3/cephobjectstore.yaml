@@ -24,6 +24,3 @@ spec:
       limits:
         cpu: "2"
         memory: 2Gi
-  healthCheck:
-    bucket:
-      interval: 60s
