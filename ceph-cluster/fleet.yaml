@@ -1,0 +1,119 @@
+defaultNamespace: rook-ceph
+
+labels:
+  koldun.io/component: ceph-cluster
+
+dependsOn:
+  - selector:
+      matchLabels:
+        koldun.io/component: longhorn
+  - selector:
+      matchLabels:
+        koldun.io/component: rook-ceph
+
+helm:
+  repo: https://charts.rook.io/release
+  chart: rook-ceph-cluster
+  version: 1.21.1
+  values:
+    cephClusterSpec:
+      dataDirHostPath: /var/lib/rook
+      cephConfig:
+        osd:
+          osd_memory_target: "3221225472"
+      resources:
+        osd:
+          requests:
+            cpu: "2"
+            memory: 4Gi
+          limits:
+            cpu: "4"
+            memory: 8Gi
+      mgr:
+        count: 1
+      mon:
+        count: 3
+        allowMultiplePerNode: false
+        volumeClaimTemplate:
+          spec:
+            storageClassName: longhorn
+            resources:
+              requests:
+                storage: 10Gi
+      storage:
+        storageClassDeviceSets:
+          - name: osd
+            count: 4
+            portable: true
+            encrypted: false
+            volumeClaimTemplates:
+              - metadata:
+                  name: data
+                spec:
+                  storageClassName: longhorn
+                  volumeMode: Block
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 300Gi
+            placement:
+              topologySpreadConstraints:
+                - maxSkew: 1
+                  topologyKey: kubernetes.io/hostname
+                  whenUnsatisfiable: ScheduleAnyway
+                  labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                          - rook-ceph-osd
+            preparePlacement:
+              podAntiAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 100
+                    podAffinityTerm:
+                      labelSelector:
+                        matchExpressions:
+                          - key: app
+                            operator: In
+                            values:
+                              - rook-ceph-osd
+                              - rook-ceph-osd-prepare
+                      topologyKey: kubernetes.io/hostname
+
+    cephBlockPools:
+      - name: koldun-ec-pool
+        spec:
+          failureDomain: host
+          replicated:
+            size: 3
+        storageClass:
+          enabled: false
+
+      - name: koldun-ec-data
+        spec:
+          failureDomain: host
+          erasureCoded:
+            dataChunks: 2
+            codingChunks: 1
+        storageClass:
+          enabled: true
+          name: ceph-ec-rbd
+          isDefault: false
+          reclaimPolicy: Retain
+          allowVolumeExpansion: true
+          parameters:
+            dataPool: koldun-ec-data
+            pool: koldun-ec-pool
+            imageFeatures: layering
+            csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+            csi.storage.k8s.io/provisioner-secret-namespace: "{{ .Release.Namespace }}"
+            csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+            csi.storage.k8s.io/controller-expand-secret-namespace: "{{ .Release.Namespace }}"
+            csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+            csi.storage.k8s.io/node-stage-secret-namespace: "{{ .Release.Namespace }}"
+            csi.storage.k8s.io/fstype: ext4
+
+    cephFileSystems: []
+    cephObjectStores: []
