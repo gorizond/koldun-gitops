@@ -20,4 +20,5 @@ helm:
       create: true
       name: csi-s3
       mounter: geesefs
+      mountOptions: "--memory-limit 1000 --dir-mode 0777 --file-mode 0666 --no-systemd"
       reclaimPolicy: Retain

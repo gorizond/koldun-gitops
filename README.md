@@ -10,6 +10,8 @@ Fleet GitOps for the koldun platform.
 
 `ceph-s3/` — Ceph object store (RGW), the bucket class and the koldun bucket claim.
 
-`csi-s3/` — S3 CSI driver (GeeseFS) exposing buckets as the `csi-s3` volume class.
+`csi-s3/` — S3 CSI driver (GeeseFS) exposing buckets as the `csi-s3` volume class. Mount options include
+`--no-systemd`: the driver's systemd path runs GeeseFS on the host, where cluster DNS names do not resolve.
+Model CRs must pass the same flag in `spec.pv.csiOptions`.
 
 Rules: pull request only, owner approval before merge, English only, pinned Helm versions, no plaintext secrets.
