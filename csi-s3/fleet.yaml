@@ -1,0 +1,23 @@
+defaultNamespace: rook-ceph
+
+labels:
+  koldun.io/component: csi-s3
+
+dependsOn:
+  - selector:
+      matchLabels:
+        koldun.io/component: ceph-s3
+
+helm:
+  repo: https://yandex-cloud.github.io/k8s-csi-s3/charts
+  chart: csi-s3
+  version: 0.43.7
+  values:
+    secret:
+      create: false
+      name: csi-s3-secret
+    storageClass:
+      create: true
+      name: csi-s3
+      mounter: geesefs
+      reclaimPolicy: Retain
