@@ -41,6 +41,8 @@ helm:
               requests:
                 storage: 10Gi
       storage:
+        useAllNodes: false
+        useAllDevices: false
         storageClassDeviceSets:
           - name: osd
             count: 4
