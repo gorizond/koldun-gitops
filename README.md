@@ -18,3 +18,21 @@ Model CRs must pass the same flag in `spec.pv.csiOptions`.
 koldun conversation reconciler; consumers use `nats://nats.nats.svc:4222`.
 
 Rules: pull request only, owner approval before merge, English only, pinned Helm versions, no plaintext secrets.
+
+## Layer structure
+
+Fleet applies each top-level directory as one bundle, chained with `dependsOn`:
+
+`longhorn` → `rook-ceph` → `ceph-cluster` → `ceph-s3` → `csi-s3`
+
+The S3 stack deviates from the single `ceph-csi-s3/` directory in the original plan:
+
+- `ceph-s3/` carries only raw manifests — `CephObjectStore`, the bucket storage class, the
+  `ObjectBucketClaim` and the credential sync Job — and has no Helm release.
+- `csi-s3/` carries the S3 CSI driver Helm chart, pinned on its own, and depends on `ceph-s3`.
+
+The split keeps raw manifests and the Helm chart in separate bundles so each is versioned
+independently: the driver chart moves at a different cadence than Rook and its CRs.
+
+`nats/` is an additional layer beyond the plan: NATS JetStream (chart 1.2.8) hosts the `conversations`
+KV bucket required by the operator and the dispatcher. It has no dependency on the storage layers.
