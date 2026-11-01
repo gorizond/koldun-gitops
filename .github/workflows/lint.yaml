@@ -16,10 +16,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: pinned Helm versions
-        run: bash scripts/check-pinned-versions.sh
+        run: |
+          bash scripts/check-pinned-versions.sh
+          bash scripts/test-check-pinned-versions.sh
 
       - name: helm lint
         run: |
+          if ! command -v helm >/dev/null 2>&1; then
+            echo "helm is not installed on the runner." >&2
+            exit 1
+          fi
           found=0
           for chart in */Chart.yaml; do
             [ -e "$chart" ] || continue
