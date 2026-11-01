@@ -14,16 +14,22 @@ Fleet GitOps for the koldun platform.
 `--no-systemd`: the driver's systemd path runs GeeseFS on the host, where cluster DNS names do not resolve.
 Model CRs must pass the same flag in `spec.pv.csiOptions`.
 
-`nats/` — NATS 1.2.8, single node with JetStream on a 10Gi PVC, holding the KV buckets of the
+`nats/` — NATS JetStream, single node with JetStream on a 10Gi PVC, holding the KV buckets of the
 koldun conversation reconciler; consumers use `nats://nats.nats.svc:4222`.
 
 Rules: pull request only, owner approval before merge, English only, pinned Helm versions, no plaintext secrets.
 
 ## Layer structure
 
-Fleet applies each top-level directory as one bundle, chained with `dependsOn`:
+Every layer directory with a `fleet.yaml` is applied as one Fleet bundle. `dependsOn` chains them:
 
-`longhorn` → `rook-ceph` → `ceph-cluster` → `ceph-s3` → `csi-s3`
+```
+longhorn ─┐
+          ├─→ ceph-cluster → ceph-s3 → csi-s3
+rook-ceph ┘
+
+nats — independent
+```
 
 The S3 stack deviates from the single `ceph-csi-s3/` directory in the original plan:
 
@@ -34,5 +40,6 @@ The S3 stack deviates from the single `ceph-csi-s3/` directory in the original p
 The split keeps raw manifests and the Helm chart in separate bundles so each is versioned
 independently: the driver chart moves at a different cadence than Rook and its CRs.
 
-`nats/` is an additional layer beyond the plan: NATS JetStream (chart 1.2.8) hosts the `conversations`
-KV bucket required by the operator and the dispatcher. It has no dependency on the storage layers.
+`nats/` is an additional layer beyond the plan, independent of the storage layers: NATS JetStream
+(the NATS Helm chart, pinned at 1.2.8; the server image follows the chart defaults) hosts the
+`conversations` KV bucket required by the operator and the dispatcher.
