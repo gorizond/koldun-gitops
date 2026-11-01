@@ -15,6 +15,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: pinned Helm versions
+        run: |
+          bash scripts/check-pinned-versions.sh
+          bash scripts/test-check-pinned-versions.sh
+
+      - name: helm lint
+        run: |
+          if ! command -v helm >/dev/null 2>&1; then
+            echo "helm is not installed on the runner." >&2
+            exit 1
+          fi
+          found=0
+          for chart in */Chart.yaml; do
+            [ -e "$chart" ] || continue
+            found=1
+            helm lint "$(dirname "$chart")"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "no local charts"
+          fi
+
       - name: yamllint
         run: |
           python3 -m pip install --quiet yamllint
